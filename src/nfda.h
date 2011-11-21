@@ -3,12 +3,17 @@
 
 #include <RcppArmadillo.h>
 
+//nonparametric regression
 RcppExport SEXP KernelPrediction(SEXP DistanceMatrix, SEXP response, SEXP bandwidth);
 RcppExport SEXP KernelPredictionCV(SEXP DistanceMatrix, SEXP response, SEXP bandwidth);
 
-RcppExport SEXP KernelPredictionBoot(SEXP DistanceMatrixPred, SEXP YLearn, SEXP Yhat, SEXP predresponse, SEXP BootRep, SEXP neighbours);
+RcppExport SEXP KernelPredictionBoot(SEXP DistanceMatrixPred, SEXP YLearn, SEXP predresponse, SEXP BootMat, SEXP neighbours);
 
 RcppExport SEXP KernelPredictionkNN(SEXP DistanceMatrix, SEXP response, SEXP neighbour, SEXP local);
 RcppExport SEXP KernelPredictionkNNgCV(SEXP DistanceMatrix, SEXP response, SEXP neighbour);
 RcppExport SEXP KernelPredictionkNNlCV(SEXP DistanceMatrix, SEXP response, SEXP knnlen);
+
+
+//nonparametric classification
+RcppExport SEXP KernelClassificationkNNlCV(SEXP DistanceMatrix, SEXP classes, SEXP knnlen);
 #endif

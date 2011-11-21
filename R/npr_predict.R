@@ -1,6 +1,12 @@
-predict.FuNopaRe <- function(object, newdata, method.params, Bootstrapping = FALSE, ...) {
+predict.FuNopaRe <- function(object, 
+                             newdata, 
+                             method.params, 
+                             Bootstrapping = FALSE, ...) {
   
-  Dist <- Semimetric (object$X.learn, newdata, object$Semimetric, object$semimetric.params)
+  Dist <- Semimetric (object$X.learn, 
+                      newdata, 
+                      object$Semimetric, 
+                      object$semimetric.params)
   DistMat <- Dist$semimetric
   if (object$Method == "KernelPredictionCV") {   
     Y <- .Call ("KernelPrediction", 
@@ -27,15 +33,19 @@ predict.FuNopaRe <- function(object, newdata, method.params, Bootstrapping = FAL
       object$Prediction <- Y
   }
   if (Bootstrapping == TRUE) {
+    W <- BootstrapData (object$Y.learn, 
+                        object$Y.hat, 
+                        method.params$Resampling.Method, 
+                        method.params$NB)
     R <- .Call ("KernelPredictionBoot", 
                 DistMat,
-                object$Y.learn, 
-                object$Y.hat,
-                Y, 
-                method.params$NB, 
+                object$Y.learn,
+                Y,
+                W,
                 method.params$neighbours,
                 PACKAGE = "nfda")
     object$Prediction <- R$pred
+    object$method.params.bootstrap <- method.params
   }
   object
 }

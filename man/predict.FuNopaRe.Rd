@@ -6,15 +6,14 @@
   nonparametric modell fitting.
 }
 \usage{
-## S3 method for class 'FuNopaRe'
 \method{predict}{FuNopaRe}(object, newdata, method.params, Bootstrapping = FALSE, ...)
 }
 \arguments{
   \item{object}{ Afitted object of class inheriting from \code{FuNopaRe}}
   \item{newdata}{ Matrix with the functional data (curves) each row one for prediction}
   \item{method.params}{ Parameters for bootstrapping}
-  \item{Bootstrapping}{ Method for choosing the bandwidth; allowed are:
-                    "CV"(default), "kNNgCV", and "kNNlCV"}
+  \item{Bootstrapping}{ Using bootstrapping for local adaptive bandwidth
+                        selection}
   \item{...}{further arguments passed to or from other methods}
 }
 \value{
@@ -22,46 +21,47 @@
   additional with the predictions in the vector \code{Prediction}.
 }
 \references{ 
-  Ferraty, F. and Vieu, P. Nonparametric Functional Data Analysis. 
+  Ferraty, F. and Vieu, P. \emph{Nonparametric Functional Data Analysis}. 
   Springer 2006.
   
-  Rachdi, M. and Vieu, P. Nonparametric regression for functional data: 
-  automatic smoothing parameter selection. Journal of Statistical Planning 
+  Rachdi, M. and Vieu, P. \emph{Nonparametric regression for functional data: 
+  automatic smoothing parameter selection}. Journal of Statistical Planning 
   and Inference 137, 9 (2007), 2784-2801.
   
-  Benhenni, K., Ferraty, F., Rachdi, M., and Vieu, P. (2007) Local smoothing 
-  regression with functional data. Computational Statistics 22, 3 (2007) 353-369.
+  Benhenni, K., Ferraty, F., Rachdi, M., and Vieu, P. \emph{Local smoothing 
+  regression with functional data}. Computational Statistics 22, 3 (2007) 353???369.
  }
 \author{Simon Mueller \email{simon.mueller@mathematik.uni-stuttgart.de}}
-\seealso{\link{Semimetric}, predict.FuNopaRe}
+\seealso{\link{Semimetric}}
 \examples{
-#functional datasets
-require (fds)
+# functional data sets
+library (fds)
 
-#fat spectrum dataset
+# fat spectrum dataset
 Y <- Fatvalues
 X <- t(Fatspectrum$y)
 
-#setup semimetric
+# setup semimetric parameters
 semimetric.params <- c()
 semimetric.params$q <- 2
 semimetric.params$nknot  <- 20
-semimetric.params$range.grid  <- c (min (Fatspectrum$x), max (Fatspectrum$x))
+semimetric.params$range.grid  <- c (min (Fatspectrum$x), 
+                                    max (Fatspectrum$x))
 
-#learn and testsample
+# learn and testsample
 learn <- 1:160
 test <- 161:215
 
-#parameter estimation and prediction by cross-validation
+# parameter estimation and prediction by cross-validation
 Learn.Fat.CV <- FuNopaRe (X[learn, ], 
                           Y[learn], 
                           semimetric = "Deriv", 
                           semimetric.params, 
                           bandwidth = "CV")
-
-#prediction of the test set
+                          
 Predict.Fat.CV <- predict (Learn.Fat.CV, 
-                           X[test, ])
-                           
-plot(Predict.Fat.CV$Prediction, Y[test])                           
+                           X[test, ], 
+                           method.params = NULL)
+
+plot (Predict.Fat.CV$Prediction, Y[161:215])                          
 }

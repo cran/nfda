@@ -1,4 +1,8 @@
-FuNopaRe <- function(X, Y, semimetric = "Deriv", semimetric.params, bandwidth = "CV") {
+FuNopaRe <- function(X, 
+                     Y, 
+                     semimetric = "Deriv", 
+                     semimetric.params, 
+                     bandwidth = "CV") {
   
   z <- c()
   sm <- paste("Semimetric", semimetric, sep = "")
@@ -41,8 +45,8 @@ FuNopaRe <- function(X, Y, semimetric = "Deriv", semimetric.params, bandwidth = 
     z$mse.learn <- k$mse
     z$Y.hat <- k$yhat
   }
-  class(z)  <- "FuNopaRe"
+  class(z) <- "FuNopaRe"
   z$X.learn <- X
-  z$Y.learn  <- Y
+  z$Y.learn <- Y
   z
 }

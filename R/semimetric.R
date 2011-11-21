@@ -23,7 +23,9 @@ Semimetric <- function(Data1, Data2, semimetric, semimetric.params) {
 # Semimetric based on the L_2-norm of the qth derivatives
 #
 ################################################################################
-SemimetricDeriv <- function (Data1, Data2, q = 2, nknot = 20, range.grid = c(0,1), Hhalf = NULL) {
+SemimetricDeriv <- function (Data1, Data2, 
+                             q = 2, nknot = 20, range.grid = c(0,1), 
+                             Hhalf = NULL) {
     
     library (splines)
     if (is.vector(Data1)) Data1 <- as.matrix(t(Data1))
@@ -83,7 +85,14 @@ SemimetricDeriv <- function (Data1, Data2, q = 2, nknot = 20, range.grid = c(0,1
     }
     return(list(semimetric = semimetric, Hhalf = Hhalf))
 }
-    
+################################################################################
+#
+# Semimetric based on Fourier coefficients
+#
+################################################################################
+
+
+
 ################################################################################
 #
 # Semimetric based on PCA

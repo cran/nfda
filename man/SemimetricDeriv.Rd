@@ -7,7 +7,10 @@
   semimetric function based on derivatives of Ferraty and Vieu.
 }
 \usage{
-SemimetricDeriv(Data1, Data2, q = 2, nknot = 20, range.grid = c(0,1), Hhalf = NULL)
+SemimetricDeriv(Data1, 
+                Data2, 
+                q = 2, nknot = 20, range.grid = c(0,1), 
+                Hhalf = NULL)
 }
 \arguments{
   \item{Data1}{ Matrix with functional data (curves) each row one; n rows}
@@ -28,26 +31,32 @@ SemimetricDeriv(Data1, Data2, q = 2, nknot = 20, range.grid = c(0,1), Hhalf = NU
 \references{ 
   http://www.math.univ-toulouse.fr/staph/npfda/
 
-  Ferraty, F. and Vieu, P. Nonparametric Functional Data Analysis. 
+  Ferraty, F. and Vieu, P. \emph{Nonparametric Functional Data Analysis}. 
   Springer 2006.
  }
 \author{Simon Mueller \email{simon.mueller@mathematik.uni-stuttgart.de}}
 \seealso{\link{Semimetric}}
 \examples{
-#functional data sets
+# functional data sets
 require (fds)
 
-#fat spectrum dataset
+# fat spectrum dataset
 X <- t(Fatspectrum$y)
 
-#setup semimetric
+# setup semimetric parameters
 q <- 2
 nknot <- 20
-range.grid <- c (min (Fatspectrum$x), max (Fatspectrum$x))
+range.grid <- c (min (Fatspectrum$x), 
+                 max (Fatspectrum$x))
 
-#calculate distance matrix
-Dist1 <- SemimetricDeriv (X[1:100, ], X[101:150, ], q, nknot, range.grid)
+# calculate distance matrix
+Dist1 <- SemimetricDeriv (X[1:100, ], 
+                          X[101:150, ], 
+                          q, nknot, range.grid)
 
-#calculate distance matrix using Hhalf
-Dist2 <- SemimetricDeriv (X[1:100, ], X[151:215, ], q, nknot, range.grid, Dist1$Hhalf)
+# calculate distance matrix using Hhalf
+Dist2 <- SemimetricDeriv (X[1:100, ], 
+                          X[151:215, ], 
+                          q, nknot, range.grid, 
+                          Dist1$Hhalf)
 }

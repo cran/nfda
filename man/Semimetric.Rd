@@ -20,29 +20,33 @@ Semimetric(Data1, Data2, semimetric, semimetric.params)
   \code{Semimetric} returns a list with: 
                     \code{semimetric} as the n x m - distance-matrix 
                     \code{...} reusable calculations, 
-                    e.g. PCA: the eigen vectors 
+                    e.g. PCA: the q eigen vectors 
 }
 \references{ 
   http://www.math.univ-toulouse.fr/staph/npfda/
 
-  Ferraty, F. and Vieu, P. Nonparametric Functional Data Analysis. 
+  Ferraty, F. and Vieu, P. \emph{Nonparametric Functional Data Analysis}. 
   Springer 2006.
  }
 \author{Simon Mueller \email{simon.mueller@mathematik.uni-stuttgart.de}}
 \seealso{\link{SemimetricDeriv}, \link{SemimetricPCA}}
 \examples{
-#functional data sets
+# functional data sets
 require (fds)
 
-#fat spectrum dataset
+# fat spectrum dataset
 X <- t(Fatspectrum$y)
 
-#setup semimetric - at the moment just the derivative semimetric is available
+# setup semimetric parameters
 semimetric.params <- c ()
 semimetric.params$q <- 2
 semimetric.params$nknot <- 20
-semimetric.params$range.grid <- c (min (Fatspectrum$x), max (Fatspectrum$x))
+semimetric.params$range.grid <- c (min (Fatspectrum$x), 
+                                   max (Fatspectrum$x))
 
-#calculate distance matrix
-Dist <- Semimetric (X, X, semimetric = "SemimetricDeriv", semimetric.params)
+# calculate distance matrix
+Dist <- Semimetric (X, 
+                    X, 
+                    semimetric = "SemimetricDeriv", 
+                    semimetric.params)
 }

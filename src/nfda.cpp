@@ -121,40 +121,23 @@ RcppExport SEXP KernelPredictionCV(SEXP DistanceMatrix, SEXP response, SEXP band
 }
 
 
-RcppExport SEXP KernelPredictionBoot(SEXP DistanceMatrixPred, SEXP YLearn, SEXP Yhat, SEXP predresponse, SEXP BootRep, SEXP neighbours) {
+RcppExport SEXP KernelPredictionBoot(SEXP DistanceMatrixPred, SEXP YLearn, SEXP predresponse, SEXP BootMat, SEXP neighbours) {
     
     Rcpp::NumericMatrix Kr(DistanceMatrixPred);
-    Rcpp::NumericVector yr(YLearn);
-    Rcpp::NumericVector yhr(Yhat);    
+    Rcpp::NumericMatrix Wr(BootMat);
+    Rcpp::NumericVector yr(YLearn);   
     Rcpp::NumericVector pyr(predresponse);
-    int nb = Rcpp::as<int>(BootRep);
+    
     int hlen = Rcpp::as<int>(neighbours);
     int n = Kr.nrow();
     int m = Kr.ncol();
+    int nb = Wr.ncol();
     
     arma::mat K(Kr.begin(), n, m, false);
+    arma::mat W(Wr.begin(), Wr.nrow(), Wr.ncol(), false);
     arma::colvec Kern(n);
     arma::colvec y(yr.begin(), yr.size(), false);
-    arma::colvec yh(yhr.begin(), yhr.size(), false);
     arma::colvec py(pyr.begin(), pyr.size(), false);
-    
-    // Bootstrap Data
-    double a = 0.8535562; // sqrt(1 - 2 * 20^(-2/3));
-    double b = 0.3684031; // 20^(-1/3);
-    arma::mat W;
-    std::srand(time(NULL));
-    W.randn(n, nb);
-    W = a * W + b * (W % W - arma::ones<arma::mat>(n, nb));
-    arma::colvec res;
-    res = y - yh;
-    //res = res - arma::mean(res);
-    //arma::colvec ran;
-    //ran.randu(n);
-    
-    for (int i = 0; i < nb; i++) {
-        W.col(i) = W.col(i) % res + yh;
-    }
-    W = arma::trans(W);
       
     arma::mat TempMat(n, hlen);
     arma::vec tempvec(nb);
@@ -179,12 +162,11 @@ RcppExport SEXP KernelPredictionBoot(SEXP DistanceMatrixPred, SEXP YLearn, SEXP 
             Kern = Kern % (Kern >= 0);
             Kern = Kern % (Kern <= 1);
             TempMat.col(j) = Kern; 
-            tempvec = (W * Kern) / arma::sum(Kern);
+            tempvec = (arma::trans(W) * Kern) / arma::sum(Kern);
             tempvec = tempvec - (py(i) * tnbones);
             tempvec = tempvec % tempvec;
             Mse(i, j) = arma::sum(tempvec);
             tempvec2(j) = Mse(i, j);
-
         }
         tempvec2.min(index);
         h = arma::sum(TempMat.col(index));
@@ -312,12 +294,12 @@ RcppExport SEXP KernelPredictionkNNlCV(SEXP DistanceMatrix, SEXP response, SEXP 
     arma::colvec tnzeros = arma::zeros<arma::colvec>(n);
     
     arma::uvec bandwidth_opt(n);
-    arma::colvec criterium(n);
     arma::colvec yhat(n);
     
     arma::colvec tmp(n);
     
     arma::colvec zz(knn_len + 1);
+    arma::colvec criterium(knn_len);
     arma::colvec bandwidth(knn_len);
     arma::colvec z(knn_len);
     arma::colvec ytmp(knn_len);
@@ -366,3 +348,5 @@ RcppExport SEXP KernelPredictionkNNlCV(SEXP DistanceMatrix, SEXP response, SEXP 
     
     return Rcpp::List::create(Rcpp::Named("kopt") = Rcpp::wrap(bandwidth_opt), Rcpp::Named("yhat") = Rcpp::wrap(yhat), Rcpp::Named("mse") = Rcpp::wrap(mse));
 }
+
+

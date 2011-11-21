@@ -21,37 +21,38 @@ FuNopaRe(X, Y, semimetric, semimetric.params, bandwidth = "CV")
   \code{FuNopaRe} returns an object of the \code{class} \code{FuNopaRe};
 }
 \references{ 
-  Ferraty, F. and Vieu, P. Nonparametric Functional Data Analysis. 
+  Ferraty, F. and Vieu, P. \emph{Nonparametric Functional Data Analysis}. 
   Springer 2006.
   
-  Rachdi, M. and Vieu, P. Nonparametric regression for functional data: 
-  automatic smoothing parameter selection. Journal of Statistical Planning 
+  Rachdi, M. and Vieu, P. \emph{Nonparametric regression for functional data: 
+  automatic smoothing parameter selection}. Journal of Statistical Planning 
   and Inference 137, 9 (2007), 2784-2801.
   
-  Benhenni, K., Ferraty, F., Rachdi, M., and Vieu, P. (2007) Local smoothing 
-  regression with functional data. Computational Statistics 22, 3 (2007) 353???369.
+  Benhenni, K., Ferraty, F., Rachdi, M., and Vieu, P. \emph{Local smoothing 
+  regression with functional data}. Computational Statistics 22, 3 (2007) 353???369.
  }
-\author{Simon M??ller \email{simon.mueller@mathematik.uni-stuttgart.de}}
-\seealso{\link{Semimetric}, predict.FuNopaRe}
+\author{Simon Mueller \email{simon.mueller@mathematik.uni-stuttgart.de}}
+\seealso{\link{Semimetric}, \link{predict.FuNopaRe}}
 \examples{
-#functional datasets
+# functional datasets
 require (fds)
 
-#fat spectrum dataset
+# fat spectrum dataset
 Y <- Fatvalues
 X <- t(Fatspectrum$y)
 
-#setup semimetric - at the moment just the derivative semimetric is available
+# setup semimetric params
 semimetric.params <- c()
 semimetric.params$q <- 2
 semimetric.params$nknot  <- 20
-semimetric.params$range.grid  <- c (min (Fatspectrum$x), max (Fatspectrum$x))
+semimetric.params$range.grid  <- c (min (Fatspectrum$x), 
+                                    max (Fatspectrum$x))
 
-#learn and testsample
+# learn and testsample
 learn <- 1:160
 test <- 161:215
 
-#parameter estimation and prediction by cross-validation
+# parameter estimation and prediction by cross-validation
 Learn.Fat.CV <- FuNopaRe (X[learn, ], 
                           Y[learn], 
                           semimetric = "Deriv", 
