@@ -350,3 +350,146 @@ RcppExport SEXP KernelPredictionkNNlCV(SEXP DistanceMatrix, SEXP response, SEXP 
 }
 
 
+/*
+ Portet from the R-code written by Ferraty and Vieu. More methods are available
+ on their website http://www.math.univ-toulouse.fr/staph/npfda/ 
+ 
+ 
+ kNN-classification with local cross-validation
+ 
+ 
+ INPUT:
+ DistanceMatrix     :    A n x n - distance matrix
+ classes            :    A vector of classes with length n
+ knnlen             :    Number of neighbours for bandwidth selection
+ 
+ OUTPUT:
+ kopt               :   The vector of length n with the optimal k
+ classes.estimated  :   Estimated classes of the learning set
+ Prob.estimated     :   n x numberofclasses probability matrix
+ */
+RcppExport SEXP KernelClassificationkNNlCV(SEXP DistanceMatrix, SEXP classes, SEXP knnlen) {
+    
+    Rcpp::NumericMatrix Kr(DistanceMatrix);
+    Rcpp::IntegerVector yr(classes);
+    int knn_len = Rcpp::as<int>(knnlen);
+    int n = Kr.nrow();
+    
+    arma::mat Kc(Kr.begin(), n, n, false); 
+    arma::icolvec y(yr.begin(), yr.size(), false);
+    int nbclass = arma::max(y);
+    
+    arma::colvec tknn_lenones = arma::ones<arma::colvec>(knn_len);
+    arma::colvec tnzeros = arma::zeros<arma::colvec>(n);
+    
+    arma::uvec bandwidth_opt(n);
+    arma::uvec classes_est(n);
+    
+    arma::colvec tmp(n);
+    arma::rowvec tmp2(nbclass);
+    arma::colvec zz(knn_len + 1);
+    arma::colvec criterium(knn_len);
+    arma::colvec bandwidth(knn_len);
+    arma::colvec z(knn_len);
+    arma::colvec ytmp(knn_len);
+    arma::colvec ktemp(knn_len);
+    
+    arma::uvec tmp_ind(n);
+    arma::uvec norm_order(knn_len);
+    arma::u32 index;        
+    
+    arma::umat Binary(n, nbclass);
+    arma::mat yhat_tmp(knn_len, nbclass);
+    arma::mat Probhat(n, nbclass);
+    for (int g = 1; g <= nbclass; g++) {
+        Binary.col(g - 1) = (y == g);
+    }
+    double denom;
+    for (int i = 0; i < n; i++) {
+        tmp_ind = sort_index(Kc.col(i));
+        tmp = sort(Kc.col(i));
+        for (int k = 0; k <= knn_len; k++) {
+            zz(k) = tmp(k + 1);
+        }
+        for (int k = 0; k < knn_len; k++) {
+            norm_order(k) = tmp_ind(k + 1);
+            z(k) = zz(k);
+            bandwidth(k) = 0.5 * (zz(k) + zz(k + 1));
+        }
+        for (int j = 0; j < knn_len; j++) {
+            ktemp = z / bandwidth(j);
+            ktemp = tknn_lenones - (ktemp % ktemp);
+            ktemp = ktemp % (ktemp >= 0);
+            ktemp = ktemp % (ktemp <= 1);
+            denom = arma::accu(ktemp);
+            for (int g = 0; g < nbclass; g++) {
+                for (int k = 0; k < knn_len; k++) {
+                    ytmp(k) = Binary(norm_order(k), g);
+                }
+                yhat_tmp(j, g) = arma::accu(ktemp % ytmp) / denom;
+            }
+            criterium[j] = arma::accu((yhat_tmp.row(j) - Binary.row(i)) % (yhat_tmp.row(j) - Binary.row(i)));
+        }
+        criterium.min(index);
+        bandwidth_opt(i) = index;
+        tmp2 = yhat_tmp.row(index);
+        Probhat.row(i) = tmp2;
+        tmp2.max(index);
+        classes_est(i) = index + 1;
+    }
+    return Rcpp::List::create(Rcpp::Named("kopt") = Rcpp::wrap(bandwidth_opt), Rcpp::Named("classes.estimated") = Rcpp::wrap(classes_est), Rcpp::Named("Prob.estimated") = Rcpp::wrap(Probhat));
+}
+
+RcppExport SEXP KernelClassificationkNN(SEXP DistanceMatrix, SEXP classes, SEXP neighbours) {
+    
+    Rcpp::NumericMatrix Kr(DistanceMatrix);
+    Rcpp::IntegerVector yr(classes);
+    Rcpp::IntegerVector knnr(neighbours);
+    int n = Kr.nrow();
+    int m = Kr.ncol();
+    
+    arma::mat Kc(Kr.begin(), n, m, false); 
+    arma::mat K = Kc;
+    arma::icolvec y(yr.begin(), yr.size(), false);
+    int nbclass = arma::max(y);
+    arma::ivec knn(knnr.begin(), knnr.size(), false);
+    arma::colvec resp;
+    
+    arma::rowvec h(m);
+    arma::rowvec tmp2(nbclass);
+    arma::colvec tmp(n);
+    arma::u32 index;
+    arma::uvec classes_pred(m);
+    
+    arma::mat KNN = sort(K);
+    
+    arma::umat Binary(n, nbclass);
+    arma::mat Probhat(m, nbclass);
+    for (int g = 1; g <= nbclass; g++) {
+        Binary.col(g - 1) = (y == g);
+    }
+    int k;
+    for (int i = 0; i < m; i++) {
+        tmp = K.col(i);
+        tmp.min(index);
+        k = knn(index);
+        tmp = KNN.col(i);
+        h(i) = 0.5 * (tmp(k) + tmp(k + 1));
+        K.col(i) = K.col(i) / h(i);
+    }    
+    K = arma::ones<arma::mat>(n, m) - (K % K);
+    K = K % (K >= 0);
+    K = K % (K <= 1);
+    for (int g = 0; g < nbclass; g++) {
+        Probhat.col(g) = arma::trans(K) * Binary.col(g) / arma::trans(arma::sum(K));
+    }
+    
+    for (int i = 0; i < m; i++) {
+        tmp2 = Probhat.row(i);
+        tmp2.max(index);
+        classes_pred(i) = index + 1;
+    }
+    
+    return Rcpp::List::create(Rcpp::Named("classes.predicted") = Rcpp::wrap(classes_pred), Rcpp::Named("Prob.predicted") = Rcpp::wrap(Probhat));
+}
+

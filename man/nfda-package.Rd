@@ -15,8 +15,8 @@ http://www.math.univ-toulouse.fr/staph/npfda/
 \tabular{ll}{
 Package: \tab nfda\cr
 Type: \tab Package\cr
-Version: \tab 0.1\cr
-Date: \tab 2011-11-07\cr
+Version: \tab 0.2-1\cr
+Date: \tab 2011-12-15\cr
 License: \tab GPL-2\cr
 LazyLoad: \tab yes\cr
 }

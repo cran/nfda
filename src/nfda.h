@@ -16,4 +16,5 @@ RcppExport SEXP KernelPredictionkNNlCV(SEXP DistanceMatrix, SEXP response, SEXP 
 
 //nonparametric classification
 RcppExport SEXP KernelClassificationkNNlCV(SEXP DistanceMatrix, SEXP classes, SEXP knnlen);
+RcppExport SEXP KernelClassificationkNN(SEXP DistanceMatrix, SEXP classes, SEXP neighbours);
 #endif
