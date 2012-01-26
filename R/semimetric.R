@@ -10,8 +10,12 @@ Semimetric <- function(Data1, Data2, semimetric, semimetric.params) {
   } else if (semimetric == "SemimetricPCA") {
     Dist <- SemimetricPCA (Data1, 
                            Data2, 
-                           semimetric.params$q,
-                           semimetric.params$EigenVec)
+                           q = semimetric.params$q,
+                           EigenVec = semimetric.params$EigenVec)
+  } else if (semimetric == "SemimetricPLS") {
+    Dist <- SemimetricPLS (Data1, 
+                           Data2, 
+                           q = semimetric.params$q)
   } else {
     
   }
@@ -127,4 +131,41 @@ SemimetricPCA <- function (Data1, Data2, q, EigenVec = NULL) {
                          PACKAGE = "nfda")
   }
   return(list(semimetric = semimetric, EigenVec = EigenVec))
+}
+################################################################################
+#
+# Semimetric based on PLS
+#
+################################################################################
+SemimetricPLS <- function (Response, Data1, Data2, q) {
+  
+  library(pls)
+  if (is.vector(Data1)) Data1 <- as.matrix(t(Data1))
+  if (is.vector(Data2)) Data2 <- as.matrix(t(Data2))
+  testfordim <- sum (dim (Data1) == dim (Data2)) == 2
+  twodatasets <- 1
+  if (testfordim) twodatasets <- sum (Data1 == Data2) != prod (dim (Data1))
+  qmax <- ncol(Data1)
+	if(q > qmax) stop(paste("give a integer q smaller than ", qmax))
+  
+  n <- nrow(Data1)
+  m <- ncol(Data1)
+  mplsr.res <- plsr (Response ~ Data1, ncomp = q)
+  Coef <- matrix (mplsr.res$coefficients, m, n)
+  b0 <- mplsr.res$Ymeans - t(Coef) %*% mplsr.res$Xmeans
+  
+  Comp1 <- Data1 %*% Coef
+  Comp1 <- outer (rep(1, n), as.vector(b0)) + Comp1
+  if(twodatasets) {
+    n2 <- nrow (Data2)
+    Comp2 <- Data2 %*% Coef
+    Comp2 <- outer (rep(1, n2), as.vector(b0)) + Comp2
+  }
+  else {
+    Comp2 <- Comp1
+  }
+  Semimetric <- 0
+  for(g in 1:q)
+    Semimetric <- Semimetric + outer (Comp1[ , g], Comp2[ , g], "-")^2
+  return(sqrt(Semimetric))
 }

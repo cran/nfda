@@ -13,7 +13,7 @@ Semimetric(Data1, Data2, semimetric, semimetric.params)
   \item{Data2}{ Matrix with a second set of functional data (curves) 
                 each row one; m rows}
   \item{semimetric}{ A string of choosing the semimetric; allowed are:
-                     "Deriv" and "PCA"}
+                     "Deriv", "PCA", and "PLS"}
   \item{semimetric.params}{ Parameters for the semimetric function.}
 }
 \value{
@@ -29,7 +29,7 @@ Semimetric(Data1, Data2, semimetric, semimetric.params)
   Springer 2006.
  }
 \author{Simon Mueller \email{simon.mueller@mathematik.uni-stuttgart.de}}
-\seealso{\link{SemimetricDeriv}, \link{SemimetricPCA}}
+\seealso{\link{SemimetricDeriv}, \link{SemimetricPCA}, \link{SemimetricPLS}}
 \examples{
 # functional data sets
 require (fds)

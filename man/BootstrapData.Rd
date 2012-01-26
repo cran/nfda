@@ -66,6 +66,7 @@ method.params <- c()
 method.params$NB <- 100
 method.params$Resampling.Method <- "homoscedatic"
 method.params$neighbours <- 20
+method.params$alpha <- 0.05
 Predict.Fat.CV <- predict (Learn.Fat.CV, 
                            X[test, ], 
                            method.params = method.params,

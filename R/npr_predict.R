@@ -45,6 +45,9 @@ predict.FuNopaRe <- function(object,
                 method.params$neighbours,
                 PACKAGE = "nfda")
     object$Prediction <- R$pred
+    z <- qnorm(method.params$alpha / 2)
+    object$loConfInt <- R$mu - z * sqrt(R$sigma / length(object$Prediction))
+    object$upConfInt <- R$mu + z * sqrt(R$sigma / length(object$Prediction))
     object$method.params.bootstrap <- method.params
   }
   object

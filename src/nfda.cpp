@@ -146,6 +146,8 @@ RcppExport SEXP KernelPredictionBoot(SEXP DistanceMatrixPred, SEXP YLearn, SEXP 
     arma::colvec tnbones = arma::ones<arma::colvec>(nb);
 
     arma::colvec bootpred(m);
+    arma::colvec mu(m);
+    arma::colvec sigma(m);
     arma::mat Mse(m, hlen);
     double h;
     arma::u32 index;
@@ -154,7 +156,9 @@ RcppExport SEXP KernelPredictionBoot(SEXP DistanceMatrixPred, SEXP YLearn, SEXP 
     arma::mat KNNBand = sort(K);
     KNNBand.shed_row(0);
     
+    // loop over elements
     for (int i = 0; i < m; i++) {
+        // loop over bandwidths
         for (int j = 0; j < hlen; j++) {
             h = 0.5 * (KNNBand.col(i)(j) + KNNBand.col(i)(j + 1));
             Kern = K.col(i) / h;
@@ -172,8 +176,14 @@ RcppExport SEXP KernelPredictionBoot(SEXP DistanceMatrixPred, SEXP YLearn, SEXP 
         h = arma::sum(TempMat.col(index));
         Kern = (TempMat.col(index) % y) / h;
         bootpred(i) = arma::sum(Kern);
+        
+        //calculate parameters for naive bootstrapped confidence intervals 
+        //TODO: improve that!!!
+        tempvec = (arma::trans(W) * TempMat.col(index)) / h;
+        mu(i) = arma::mean(tempvec);
+        sigma(i) = arma::stddev(tempvec);
     }
-    return Rcpp::List::create(Rcpp::Named("pred") = Rcpp::wrap(bootpred), Rcpp::Named("Mse") = Rcpp::wrap(Mse / nb)); 
+    return Rcpp::List::create(Rcpp::Named("pred") = Rcpp::wrap(bootpred), Rcpp::Named("mu") = Rcpp::wrap(bootpred), Rcpp::Named("sigma") = Rcpp::wrap(bootpred), Rcpp::Named("Mse") = Rcpp::wrap(Mse / nb)); 
 }
 
 
@@ -359,12 +369,12 @@ RcppExport SEXP KernelPredictionkNNlCV(SEXP DistanceMatrix, SEXP response, SEXP 
  
  
  INPUT:
- DistanceMatrix     :    A n x n - distance matrix
- classes            :    A vector of classes with length n
+ DistanceMatrix     :    n x n - distance matrix
+ classes            :    Vector of classes with length n
  knnlen             :    Number of neighbours for bandwidth selection
  
  OUTPUT:
- kopt               :   The vector of length n with the optimal k
+ kopt               :   Vector of length n with the optimal k
  classes.estimated  :   Estimated classes of the learning set
  Prob.estimated     :   n x numberofclasses probability matrix
  */
@@ -440,6 +450,23 @@ RcppExport SEXP KernelClassificationkNNlCV(SEXP DistanceMatrix, SEXP classes, SE
     return Rcpp::List::create(Rcpp::Named("kopt") = Rcpp::wrap(bandwidth_opt), Rcpp::Named("classes.estimated") = Rcpp::wrap(classes_est), Rcpp::Named("Prob.estimated") = Rcpp::wrap(Probhat));
 }
 
+/*
+ Portet from the R-code written by Ferraty and Vieu. More methods are available
+ on their website http://www.math.univ-toulouse.fr/staph/npfda/ 
+ 
+ 
+ kNN-classification (prediction)
+ 
+ 
+ INPUT:
+ DistanceMatrix     :    n x m - distance matrix
+ classes            :    Vector of classes with length n
+ knnlen             :    Number of neighbours for bandwidth selection
+ 
+ OUTPUT:
+ classes.predicted  :   Vector of predicted classes with length m
+ Prob.predicted     :   m x numberofclasses probability matrix
+ */
 RcppExport SEXP KernelClassificationkNN(SEXP DistanceMatrix, SEXP classes, SEXP neighbours) {
     
     Rcpp::NumericMatrix Kr(DistanceMatrix);
